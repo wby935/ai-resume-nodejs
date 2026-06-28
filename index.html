@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 数字简历</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ========== CSS Reset & Variables ========== */
+:root {
+  --primary: #5B9BD5;
+  --primary-light: #74B9FF;
+  --primary-lighter: #A3D5FF;
+  --primary-lightest: #E3F2FD;
+  --primary-dark: #3A7BD5;
+  --bg: #F7FBFF;
+  --bg-white: #FFFFFF;
+  --text-primary: #1A2B4A;
+  --text-secondary: #5A6A85;
+  --text-muted: #8E9BB5;
+  --border: #E2ECF6;
+  --shadow-sm: 0 1px 3px rgba(91,155,213,0.08);
+  --shadow-md: 0 4px 16px rgba(91,155,213,0.1);
+  --shadow-lg: 0 8px 32px rgba(91,155,213,0.12);
+  --shadow-xl: 0 16px 48px rgba(91,155,213,0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ========== Utilities ========== */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.container-wide {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes typing {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* ========== Candidate Mode: Upload Flow ========== */
+#candidate-view {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-lightest) 0%, #F0F7FF 50%, #E8F0FE 100%);
+}
+
+.candidate-header {
+  text-align: center;
+  padding: 60px 24px 40px;
+}
+
+.candidate-header .logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.candidate-header .logo span {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.candidate-header p {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  padding: 0 24px;
+}
+
+.step-dot {
+  width: 44px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: var(--transition);
+}
+
+.step-dot.active {
+  background: var(--primary);
+  width: 60px;
+}
+
+.step-dot.done {
+  background: var(--primary-light);
+}
+
+/* Step Container */
+.step-container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.step-panel {
+  display: none;
+}
+
+.step-panel.active {
+  display: block;
+  animation: slideUp 0.5s ease-out;
+}
+
+/* Card */
+.card {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 40px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.card-subtitle {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 32px;
+}
+
+/* Upload Area */
+.upload-zone {
+  border: 2px dashed var(--primary-lighter);
+  border-radius: var(--radius-lg);
+  padding: 56px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: linear-gradient(135deg, rgba(91,155,213,0.03), rgba(116,185,255,0.05));
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(91,155,213,0.08), rgba(116,185,255,0.1));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.upload-zone .upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.upload-zone h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.upload-zone p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.upload-zone .file-types {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.upload-zone .file-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#file-input {
+  display: none;
+}
+
+/* File Selected */
+.file-info {
+  display: none;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--primary-lightest);
+  border-radius: var(--radius-md);
+  margin-top: 20px;
+}
+
+.file-info.show {
+  display: flex;
+}
+
+.file-info .file-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.file-info .file-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-info .file-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-info .file-size {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.file-info .file-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(91,155,213,0.15);
+  color: var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.file-info .file-remove:hover {
+  background: rgba(91,155,213,0.25);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(91,155,213,0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(91,155,213,0.45);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: var(--bg-white);
+  color: var(--primary);
+  border: 1.5px solid var(--primary-lighter);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-lightest);
+  border-color: var(--primary);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  color: var(--primary);
+  background: var(--primary-lightest);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-lg {
+  padding: 16px 40px;
+  font-size: 16px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: none;
+}
+
+.btn.loading .spinner {
+  display: block;
+}
+
+.btn.loading .btn-text {
+  display: none;
+}
+
+/* Analysis Result */
+.analysis-section {
+  margin-bottom: 28px;
+}
+
+.analysis-section:last-child {
+  margin-bottom: 0;
+}
+
+.analysis-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.analysis-value {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.analysis-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+.analysis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.analysis-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Experience Timeline in Analysis */
+.analysis-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.analysis-timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary), var(--primary-lighter));
+  border-radius: 1px;
+}
+
+.analysis-timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.analysis-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.analysis-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -23px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 3px var(--primary-lightest);
+}
+
+.analysis-timeline-item .item-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.analysis-timeline-item .item-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.analysis-timeline-item .item-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+/* Missing fields warning */
+.missing-fields {
+  background: #FFF8E1;
+  border: 1px solid #FFE082;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+.missing-fields .warning-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.missing-fields .missing-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #F57F17;
+  margin-bottom: 8px;
+}
+
+.missing-fields .missing-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.missing-fields .missing-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255,224,130,0.5);
+  color: #E65100;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Supplement Form */
+.supplement-form {
+  margin-top: 24px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.form-label .form-question {
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 4px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-white);
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91,155,213,0.15);
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* Generate Result */
+.generate-result {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.generate-result .success-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: float 2s ease-in-out infinite;
+}
+
+.generate-result h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.generate-result p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  margin-bottom: 32px;
+}
+
+.qr-container {
+  display: inline-block;
+  background: #fff;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 24px;
+}
+
+.qr-container img {
+  display: block;
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+}
+
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  word-break: break-all;
+  transition: var(--transition);
+  margin-top: 16px;
+}
+
+.resume-link:hover {
+  background: rgba(91,155,213,0.15);
+}
+
+/* ========== HR Mode: Digital Resume ========== */
+#hr-view {
+  display: none;
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* HR Nav */
+.hr-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  transition: var(--transition);
+}
+
+.hr-nav-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.hr-nav .nav-logo {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.3px;
+}
+
+.hr-nav .nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.hr-nav .nav-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+  padding: 4px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.hr-nav .nav-link:hover {
+  color: var(--primary);
+  border-bottom-color: var(--primary-lighter);
+}
+
+/* Hero */
+.hr-hero {
+  padding: 120px 24px 64px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--primary-lightest) 0%, #F0F7FF 50%, #E8F0FE 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hr-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -25%;
+  width: 150%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(91,155,213,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hr-hero .hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(91,155,213,0.1);
+  border: 1px solid rgba(91,155,213,0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary-dark);
+  margin-bottom: 24px;
+}
+
+.hr-hero .hero-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.hr-hero .hero-name {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.hr-hero .hero-title {
+  font-size: 20px;
+  color: var(--primary);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.hr-hero .hero-summary {
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+/* Section Title */
+.hr-section {
+  padding: 72px 24px;
+}
+
+.hr-section:nth-child(even) {
+  background: var(--bg-white);
+}
+
+.hr-section-inner {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.section-header {
+  margin-bottom: 40px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+/* Basic Info Card */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.info-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.info-card .info-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-lightest);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.info-card .info-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.info-card .info-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.info-card .info-value a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.info-card .info-value a:hover {
+  text-decoration: underline;
+}
+
+/* Work Experience Timeline */
+.timeline {
+  position: relative;
+  padding-left: 32px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary), var(--primary-lighter));
+  border-radius: 1px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 36px;
+  animation: slideUp 0.4s ease-out backwards;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -31px;
+  top: 8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px var(--primary-lightest);
+  z-index: 1;
+}
+
+.timeline-item .timeline-period {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.timeline-item .timeline-company {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.timeline-item .timeline-position {
+  font-size: 15px;
+  color: var(--primary);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.timeline-item .timeline-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+/* Project Cards */
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.project-card {
+  background: var(--bg-white);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--primary-lighter);
+}
+
+.project-card .project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.project-card .project-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.project-card .project-role {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.project-card .project-period {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.project-card .project-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  flex: 1;
+}
+
+.project-card .project-achievement {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.7;
+}
+
+.project-card .achievement-label {
+  font-weight: 600;
+  color: var(--primary-dark);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Education */
+.edu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.edu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.edu-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.edu-item .edu-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-lightest);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.edu-item .edu-content {
+  flex: 1;
+}
+
+.edu-item .edu-school {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.edu-item .edu-detail {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.edu-item .edu-period {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Skills */
+.skills-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.skill-tag:hover {
+  background: rgba(91,155,213,0.15);
+  border-color: var(--primary-lighter);
+  transform: translateY(-1px);
+}
+
+/* Chat Section */
+.chat-section {
+  padding: 72px 24px;
+  background: linear-gradient(135deg, #F7FBFF 0%, var(--primary-lightest) 100%);
+}
+
+.chat-section-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.chat-container {
+  background: var(--bg-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-header .chat-avatar {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.chat-header .chat-meta .chat-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.chat-header .chat-meta .chat-status {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.chat-messages {
+  padding: 24px;
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.chat-msg {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+}
+
+.chat-msg.assistant {
+  align-self: flex-start;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-msg .msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.chat-msg.assistant .msg-avatar {
+  background: var(--primary-lightest);
+  color: var(--primary);
+}
+
+.chat-msg.user .msg-avatar {
+  background: #F0F0F0;
+  color: #666;
+}
+
+.chat-msg .msg-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.chat-msg.assistant .msg-bubble {
+  background: #F5F8FC;
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-msg.user .msg-bubble {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-typing {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: #F5F8FC;
+  border-radius: var(--radius-md);
+  width: fit-content;
+}
+
+.chat-typing span {
+  width: 6px;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: typing 1.2s ease-in-out infinite;
+}
+
+.chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+.chat-input-area {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg);
+  outline: none;
+  transition: var(--transition);
+}
+
+.chat-input:focus {
+  border-color: var(--primary);
+  background: var(--bg-white);
+  box-shadow: 0 0 0 3px rgba(91,155,213,0.1);
+}
+
+.chat-send {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.chat-send:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(91,155,213,0.4);
+}
+
+.chat-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Quick Questions */
+.quick-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 24px 16px;
+}
+
+.quick-q {
+  padding: 6px 14px;
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border: 1px solid rgba(91,155,213,0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.quick-q:hover {
+  background: rgba(91,155,213,0.15);
+  border-color: var(--primary-lighter);
+}
+
+/* Footer */
+.hr-footer {
+  text-align: center;
+  padding: 40px 24px;
+  background: var(--bg-white);
+  border-top: 1px solid var(--border);
+}
+
+.hr-footer p {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .hr-hero .hero-name {
+    font-size: 32px;
+  }
+
+  .hr-hero .hero-title {
+    font-size: 16px;
+  }
+
+  .section-title {
+    font-size: 24px;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 24px;
+  }
+
+  .timeline-item .timeline-company {
+    font-size: 17px;
+  }
+
+  .chat-messages {
+    max-height: 320px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+  }
+
+  .hr-nav .nav-links {
+    display: none;
+  }
+
+  .edu-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hr-hero {
+    padding: 100px 16px 48px;
+  }
+
+  .hr-section {
+    padding: 48px 16px;
+  }
+
+  .candidate-header {
+    padding: 40px 16px 24px;
+  }
+
+  .upload-zone {
+    padding: 40px 20px;
+  }
+
+  .project-card {
+    padding: 24px;
+  }
+}
+
+/* ========== Toast ========== */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight 0.3s ease-out;
+  max-width: 360px;
+}
+
+.toast-error {
+  background: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+.toast-success {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.toast-info {
+  background: var(--primary-lightest);
+  color: var(--primary-dark);
+  border: 1px solid rgba(91,155,213,0.2);
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ========== HR Loading State ========== */
+.hr-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-lightest) 0%, #F0F7FF 100%);
+}
+
+.hr-loading .loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 20px;
+}
+
+.hr-loading p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==================== CANDIDATE VIEW ==================== -->
+<div id="candidate-view">
+  <div class="candidate-header">
+    <div class="logo"><span>AI Resume</span></div>
+    <p>上传简历，AI 帮你生成数字分身</p>
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" data-step="1"></div>
+    <div class="step-dot" data-step="2"></div>
+    <div class="step-dot" data-step="3"></div>
+    <div class="step-dot" data-step="4"></div>
+  </div>
+
+  <div class="step-container">
+
+    <!-- Step 1: Upload -->
+    <div class="step-panel active" id="step-1">
+      <div class="card">
+        <div class="card-title">上传你的简历</div>
+        <div class="card-subtitle">支持 PDF、Word 格式，AI 将自动分析简历内容</div>
+
+        <div class="upload-zone" id="uploadZone">
+          <span class="upload-icon">📄</span>
+          <h3>拖拽简历文件到这里</h3>
+          <p>或点击此区域选择文件</p>
+          <div class="file-types">
+            <span class="file-type-badge">PDF</span>
+            <span class="file-type-badge">DOCX</span>
+            <span class="file-type-badge">DOC</span>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf,.docx,.doc">
+
+        <div class="file-info" id="fileInfo">
+          <div class="file-icon">📄</div>
+          <div class="file-meta">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+          </div>
+          <button class="file-remove" id="fileRemove" title="移除文件">✕</button>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" id="uploadBtn" disabled style="margin-top:28px">
+          <span class="btn-text">上传并分析</span>
+          <span class="spinner"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Analysis -->
+    <div class="step-panel" id="step-2">
+      <div class="card">
+        <div class="card-title">AI 分析结果</div>
+        <div class="card-subtitle">以下是 AI 从简历中提取的关键信息</div>
+        <div id="analysisContent"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Supplement -->
+    <div class="step-panel" id="step-3">
+      <div class="card">
+        <div class="card-title">补充信息</div>
+        <div class="card-subtitle">回答以下问题，让数字简历更完整（可跳过）</div>
+        <div id="supplementForm" class="supplement-form"></div>
+        <div class="btn-group">
+          <button class="btn btn-secondary" id="skipBtn">跳过</button>
+          <button class="btn btn-primary" id="submitSupplementBtn">
+            <span class="btn-text">提交补充</span>
+            <span class="spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Generate -->
+    <div class="step-panel" id="step-4">
+      <div class="card">
+        <div class="generate-result" id="generateResult">
+          <div class="success-icon">🎉</div>
+          <h2>数字简历已生成</h2>
+          <p>扫描二维码或点击链接查看你的 AI 数字简历</p>
+          <div class="qr-container" id="qrContainer" style="display:none">
+            <img id="qrImage" alt="QR Code">
+          </div>
+          <div>
+            <a class="resume-link" id="resumeLink" href="#" target="_blank">
+              🔗 <span id="resumeUrl"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== HR VIEW ==================== -->
+<div id="hr-view">
+
+  <!-- Loading -->
+  <div class="hr-loading" id="hrLoading">
+    <div class="loading-spinner"></div>
+    <p>正在加载数字简历...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div id="hrContent" style="display:none">
+
+    <!-- Nav -->
+    <nav class="hr-nav" id="hrNav">
+      <div class="hr-nav-inner">
+        <div class="nav-logo">AI Resume</div>
+        <div class="nav-links">
+          <a class="nav-link" href="#info">基本信息</a>
+          <a class="nav-link" href="#experience">工作经历</a>
+          <a class="nav-link" href="#projects">代表项目</a>
+          <a class="nav-link" href="#education">教育背景</a>
+          <a class="nav-link" href="#skills">技能</a>
+          <a class="nav-link" href="#chat">问 AI</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hr-hero" id="hrHero">
+      <div class="hero-badge">
+        <span class="status-dot"></span>
+        <span>AI 数字分身 · 在线</span>
+      </div>
+      <h1 class="hero-name" id="heroName">—</h1>
+      <div class="hero-title" id="heroTitle">—</div>
+      <p class="hero-summary" id="heroSummary"></p>
+    </section>
+
+    <!-- Basic Info -->
+    <section class="hr-section" id="info">
+      <div class="hr-section-inner">
+        <div class="section-header">
+          <div class="section-label">Basic Info</div>
+          <h2 class="section-title">基本信息</h2>
+        </div>
+        <div class="info-grid" id="infoGrid"></div>
+      </div>
+    </section>
+
+    <!-- Work Experience -->
+    <section class="hr-section" id="experience">
+      <div class="hr-section-inner">
+        <div class="section-header">
+          <div class="section-label">Experience</div>
+          <h2 class="section-title">工作经历</h2>
+        </div>
+        <div class="timeline" id="experienceTimeline"></div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section class="hr-section" id="projects">
+      <div class="hr-section-inner">
+        <div class="section-header">
+          <div class="section-label">Selected Projects</div>
+          <h2 class="section-title">代表项目</h2>
+        </div>
+        <div class="project-grid" id="projectGrid"></div>
+      </div>
+    </section>
+
+    <!-- Education -->
+    <section class="hr-section" id="education">
+      <div class="hr-section-inner">
+        <div class="section-header">
+          <div class="section-label">Education</div>
+          <h2 class="section-title">教育背景</h2>
+        </div>
+        <div class="edu-list" id="eduList"></div>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section class="hr-section" id="skills">
+      <div class="hr-section-inner">
+        <div class="section-header">
+          <div class="section-label">Toolkit</div>
+          <h2 class="section-title">技能标签</h2>
+        </div>
+        <div class="skills-grid" id="skillsGrid"></div>
+      </div>
+    </section>
+
+    <!-- Chat -->
+    <section class="chat-section" id="chat">
+      <div class="chat-section-inner">
+        <div class="section-header" style="text-align:center">
+          <div class="section-label">AI Digital Twin</div>
+          <h2 class="section-title">向 AI 分身提问</h2>
+          <p style="color:var(--text-secondary);font-size:15px;margin-top:8px">快速了解求职者的经历、能力与岗位匹配度</p>
+        </div>
+        <div class="chat-container">
+          <div class="chat-header">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-meta">
+              <div class="chat-name" id="chatName">AI 数字分身</div>
+              <div class="chat-status">在线 · 通常在一分钟内回复</div>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg assistant">
+              <div class="msg-avatar">🤖</div>
+              <div class="msg-bubble" id="chatWelcome">你好，我是此简历的 AI 数字分身。你可以问我关于求职者的工作经历、项目经验、技能专长或求职方向。</div>
+            </div>
+          </div>
+          <div class="quick-questions" id="quickQuestions">
+            <button class="quick-q" data-q="请介绍一下你自己">介绍一下自己</button>
+            <button class="quick-q" data-q="你的核心优势是什么">核心优势</button>
+            <button class="quick-q" data-q="讲讲你最得意的项目">代表项目</button>
+            <button class="quick-q" data-q="为什么应该录用你">为什么录用你</button>
+          </div>
+          <div class="chat-input-area">
+            <input class="chat-input" id="chatInput" placeholder="输入你想了解的问题..." autocomplete="off">
+            <button class="chat-send" id="chatSend">➤</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="hr-footer">
+      <p>Powered by AI Resume · AI 数字简历</p>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  AI Resume - Frontend Application
+// ============================================================
+
+const API_BASE = window.location.origin; // same origin, or change to http://localhost:9000
+
+// ========== Utility ==========
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function showToast(msg, type = 'info') {
+  const container = $('#toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(40px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Safe field access with fallback
+function getVal(obj, key, fallback = '—') {
+  if (!obj) return fallback;
+  return obj[key] != null && obj[key] !== '' ? obj[key] : fallback;
+}
+
+// ========== Mode Detection ==========
+const urlParams = new URLSearchParams(window.location.search);
+const mode = urlParams.get('mode');
+const resumeId = urlParams.get('resume_id');
+
+if (mode === 'hr' && resumeId) {
+  initHRView(resumeId);
+} else {
+  initCandidateView();
+}
+
+// ============================================================
+//  CANDIDATE VIEW
+// ============================================================
+function initCandidateView() {
+  $('#hr-view').style.display = 'none';
+  $('#candidate-view').style.display = 'block';
+
+  let selectedFile = null;
+  let currentResumeId = null;
+
+  // ---- Upload Zone ----
+  const uploadZone = $('#uploadZone');
+  const fileInput = $('#file-input');
+  const fileInfo = $('#fileInfo');
+  const uploadBtn = $('#uploadBtn');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  });
+
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('drag-over');
+  });
+
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) handleFile(files[0]);
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) handleFile(e.target.files[0]);
+  });
+
+  function handleFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'docx', 'doc'].includes(ext)) {
+      showToast('仅支持 PDF、DOCX、DOC 格式', 'error');
+      return;
+    }
+    selectedFile = file;
+    $('#fileName').textContent = file.name;
+    $('#fileSize').textContent = formatFileSize(file.size);
+    fileInfo.classList.add('show');
+    uploadBtn.disabled = false;
+  }
+
+  $('#fileRemove').addEventListener('click', () => {
+    selectedFile = null;
+    fileInput.value = '';
+    fileInfo.classList.remove('show');
+    uploadBtn.disabled = true;
+  });
+
+  // ---- Upload ----
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+    uploadBtn.classList.add('loading');
+    uploadBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/resume/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.detail || '上传失败');
+      }
+
+      const data = await resp.json();
+      currentResumeId = data.resume_id;
+      showToast('上传成功，AI 正在分析...', 'success');
+
+      // Fetch analysis
+      await fetchAndShowAnalysis(currentResumeId);
+    } catch (e) {
+      showToast(e.message || '上传失败', 'error');
+      uploadBtn.classList.remove('loading');
+      uploadBtn.disabled = false;
+    }
+  });
+
+  // ---- Analysis ----
+  async function fetchAndShowAnalysis(rid) {
+    try {
+      // Poll for analysis (the upload already triggers analysis)
+      const resp = await fetch(`${API_BASE}/api/resume/analysis/${rid}`);
+      if (!resp.ok) throw new Error('获取分析结果失败');
+      const data = await resp.json();
+
+      renderAnalysis(data);
+      renderSupplementForm(data.questions || [], data.missing_fields || []);
+      goToStep(2);
+    } catch (e) {
+      showToast(e.message, 'error');
+      uploadBtn.classList.remove('loading');
+      uploadBtn.disabled = false;
+    }
+  }
+
+  function renderAnalysis(data) {
+    const info = data.extracted_info || {};
+    let html = '';
+
+    // Missing fields warning
+    if (data.missing_fields && data.missing_fields.length > 0) {
+      html += `<div class="missing-fields">
+        <div class="missing-title"><span class="warning-icon">⚠️</span>以下信息未能从简历中提取</div>
+        <div class="missing-list">
+          ${data.missing_fields.map(f => `<span class="missing-tag">${f}</span>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // Name
+    if (info.name) {
+      html += `<div class="analysis-section">
+        <div class="analysis-label">姓名</div>
+        <div class="analysis-value" style="font-size:20px;font-weight:700">${info.name}</div>
+      </div>`;
+    }
+
+    // Job Target
+    if (info.job_target) {
+      html += `<div class="analysis-section">
+        <div class="analysis-label">求职意向</div>
+        <div class="analysis-value">${info.job_target}</div>
+      </div>`;
+    }
+
+    // Contact
+    const contacts = [];
+    if (info.phone) contacts.push(`📱 ${info.phone}`);
+    if (info.email) contacts.push(`✉️ ${info.email}`);
+    if (contacts.length) {
+      html += `<div class="analysis-section">
+        <div class="analysis-label">联系方式</div>
+        <div class="analysis-value">${contacts.join('&nbsp;&nbsp;&nbsp;')}</div>
+      </div>`;
+    }
+
+    // Self evaluation
+    if (info.self_evaluation) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">自我评价</div>
+          <div class="analysis-value">${info.self_evaluation}</div>
+        </div>`;
+    }
+
+    // Work experience
+    if (info.work_experience && info.work_experience.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">工作经历</div>
+          <div class="analysis-timeline">
+            ${info.work_experience.map(exp => `
+              <div class="analysis-timeline-item">
+                <div class="item-title">${getVal(exp, 'company')} · ${getVal(exp, 'position')}</div>
+                <div class="item-sub">${getVal(exp, 'time')}</div>
+                ${exp.content ? `<div class="item-desc">${exp.content}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+
+    // Project experience
+    if (info.project_experience && info.project_experience.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">项目经验</div>
+          <div class="analysis-timeline">
+            ${info.project_experience.map(p => `
+              <div class="analysis-timeline-item">
+                <div class="item-title">${getVal(p, 'project_name')} · ${getVal(p, 'role')}</div>
+                <div class="item-sub">${getVal(p, 'time')}</div>
+                ${p.content ? `<div class="item-desc">${p.content}</div>` : ''}
+                ${p.achievement ? `<div class="item-desc" style="margin-top:4px;color:var(--primary-dark)">🏆 ${p.achievement}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+    }
+
+    // Education
+    if (info.education && info.education.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">教育背景</div>
+          ${info.education.map(edu => `
+            <div style="margin-bottom:8px">
+              <strong>${getVal(edu, 'school')}</strong>
+              <span style="color:var(--text-muted);margin-left:8px">${getVal(edu, 'major')} · ${getVal(edu, 'degree')}</span>
+              <span style="color:var(--text-muted);margin-left:8px">${getVal(edu, 'time')}</span>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    // Skills
+    if (info.skills && info.skills.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">技能</div>
+          <div class="analysis-tags">
+            ${info.skills.map(s => `<span class="analysis-tag">${s}</span>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    // Certificates
+    if (info.certificates && info.certificates.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">证书</div>
+          <div class="analysis-tags">
+            ${info.certificates.map(c => `<span class="analysis-tag">📜 ${c}</span>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    // Languages
+    if (info.languages && info.languages.length > 0) {
+      html += `<div class="analysis-divider"></div>
+        <div class="analysis-section">
+          <div class="analysis-label">语言能力</div>
+          <div class="analysis-tags">
+            ${info.languages.map(l => `<span class="analysis-tag">🌐 ${l}</span>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    $('#analysisContent').innerHTML = html;
+  }
+
+  // ---- Supplement Form ----
+  function renderSupplementForm(questions, missingFields) {
+    let html = '';
+
+    if (questions.length === 0 && missingFields.length === 0) {
+      html = '<p style="color:var(--text-muted);text-align:center;padding:24px 0">简历信息已比较完整，无需补充 🎉</p>';
+    } else {
+      // Questions from AI
+      questions.forEach((q, i) => {
+        html += `<div class="form-group">
+          <label class="form-label">
+            问题 ${i + 1}
+            <span class="form-question">${q.question}</span>
+          </label>
+          <textarea class="form-textarea" data-field="${q.field}" placeholder="请输入你的回答..."></textarea>
+        </div>`;
+      });
+
+      // Missing fields
+      if (missingFields.length > 0) {
+        html += `<div class="form-group" style="margin-top:12px">
+          <label class="form-label">以下信息缺失，如能补充请填写</label>
+        </div>`;
+        missingFields.forEach(field => {
+          const fieldLabels = {
+            name: '姓名', phone: '手机号', email: '邮箱', job_target: '求职意向',
+            self_evaluation: '自我评价'
+          };
+          const label = fieldLabels[field] || field;
+          html += `<div class="form-group">
+            <label class="form-label">${label}</label>
+            <input class="form-input" data-field="${field}" placeholder="请输入${label}">
+          </div>`;
+        });
+      }
+    }
+
+    $('#supplementForm').innerHTML = html;
+  }
+
+  // Skip button
+  $('#skipBtn').addEventListener('click', () => generateResume());
+
+  // Submit supplement
+  $('#submitSupplementBtn').addEventListener('click', async () => {
+    const btn = $('#submitSupplementBtn');
+    btn.classList.add('loading');
+
+    const supplementData = {};
+    $$('#supplementForm textarea, #supplementForm input').forEach(el => {
+      if (el.value.trim()) {
+        supplementData[el.dataset.field] = el.value.trim();
+      }
+    });
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/resume/supplement`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume_id: currentResumeId,
+          supplementary_info: supplementData
+        })
+      });
+
+      if (!resp.ok) throw new Error('补充信息提交失败');
+      showToast('补充信息已保存', 'success');
+      await generateResume();
+    } catch (e) {
+      showToast(e.message, 'error');
+      btn.classList.remove('loading');
+    }
+  });
+
+  // ---- Generate ----
+  async function generateResume() {
+    goToStep(4);
+    try {
+      const resp = await fetch(`${API_BASE}/api/resume/generate/${currentResumeId}`, {
+        method: 'POST'
+      });
+      if (!resp.ok) throw new Error('生成失败');
+
+      const data = await resp.json();
+
+      // Show QR code if available
+      if (data.qr_code_url) {
+        $('#qrImage').src = data.qr_code_url;
+        $('#qrContainer').style.display = 'inline-block';
+      }
+
+      // Build HR link
+      const hrUrl = `${window.location.origin}${window.location.pathname}?mode=hr&resume_id=${currentResumeId}`;
+      $('#resumeLink').href = hrUrl;
+      $('#resumeUrl').textContent = hrUrl;
+
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  }
+
+  // ---- Step Navigation ----
+  function goToStep(step) {
+    $$('.step-panel').forEach(p => p.classList.remove('active'));
+    $(`#step-${step}`).classList.add('active');
+
+    $$('.step-dot').forEach(d => {
+      const s = parseInt(d.dataset.step);
+      d.classList.remove('active', 'done');
+      if (s === step) d.classList.add('active');
+      else if (s < step) d.classList.add('done');
+    });
+
+    // Show next button on step 2
+    if (step === 2) {
+      // Add a next button if not present
+      if (!$('#step-2 .btn-group')) {
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'btn-group';
+        btnGroup.innerHTML = `
+          <button class="btn btn-secondary" onclick="goToStepFromBtn(3)">补充信息</button>
+          <button class="btn btn-primary" onclick="goToStepFromBtn(4); generateFromBtn()">直接生成</button>
+        `;
+        $('#step-2').querySelector('.card').appendChild(btnGroup);
+      }
+    }
+  }
+
+  // Global helpers for inline onclick
+  window.goToStepFromBtn = function(step) {
+    goToStep(step);
+  };
+
+  window.generateFromBtn = async function() {
+    await generateResume();
+  };
+}
+
+// ============================================================
+//  HR VIEW
+// ============================================================
+async function initHRView(rid) {
+  $('#candidate-view').style.display = 'none';
+  $('#hr-view').style.display = 'block';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/resume/digital/${rid}`);
+    if (!resp.ok) throw new Error('简历不存在');
+    const data = await resp.json();
+
+    renderHRView(data);
+  } catch (e) {
+    $('#hrLoading').innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:48px;margin-bottom:16px">😕</div>
+        <p style="color:var(--text-secondary);font-size:16px">${e.message || '加载失败'}</p>
+        <a href="${window.location.pathname}" style="color:var(--primary);margin-top:12px;display:inline-block">返回首页</a>
+      </div>
+    `;
+  }
+}
+
+function renderHRView(data) {
+  const info = data.extracted_info || {};
+  const supp = data.supplementary_info || {};
+
+  // Merge supplementary info
+  const merged = { ...info };
+  Object.keys(supp).forEach(k => {
+    if (supp[k] && !merged[k]) merged[k] = supp[k];
+  });
+
+  // ---- Hero ----
+  $('#heroName').textContent = getVal(merged, 'name', '求职者');
+  $('#heroTitle').textContent = getVal(merged, 'job_target', '求职意向');
+  $('#heroSummary').textContent = getVal(merged, 'self_evaluation', '');
+  $('#chatName').textContent = `${getVal(merged, 'name', '求职者')}的 AI 分身`;
+  $('#chatWelcome').textContent = `你好，我是${getVal(merged, 'name', '求职者')}的 AI 数字分身。你可以问我关于他/她的工作经历、项目经验、技能专长或求职方向。`;
+
+  // ---- Basic Info ----
+  const infoItems = [];
+  if (merged.phone) infoItems.push({ icon: '📱', label: '手机', value: merged.phone, link: `tel:${merged.phone}` });
+  if (merged.email) infoItems.push({ icon: '✉️', label: '邮箱', value: merged.email, link: `mailto:${merged.email}` });
+  if (merged.job_target) infoItems.push({ icon: '💼', label: '求职意向', value: merged.job_target });
+
+  if (infoItems.length > 0) {
+    $('#infoGrid').innerHTML = infoItems.map(item => `
+      <div class="info-card">
+        <div class="info-icon">${item.icon}</div>
+        <div class="info-label">${item.label}</div>
+        <div class="info-value">${item.link ? `<a href="${item.link}">${item.value}</a>` : item.value}</div>
+      </div>
+    `).join('');
+  } else {
+    $('#infoGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>暂无基本信息</p></div>';
+  }
+
+  // ---- Work Experience ----
+  const workExp = merged.work_experience || [];
+  if (workExp.length > 0) {
+    $('#experienceTimeline').innerHTML = workExp.map((exp, i) => {
+      const period = getVal(exp, 'time');
+      const company = getVal(exp, 'company');
+      const position = getVal(exp, 'position');
+      const desc = exp.content || '';
+      return `
+        <div class="timeline-item" style="animation-delay:${i * 0.1}s">
+          <span class="timeline-period">${period}</span>
+          <div class="timeline-company">${company}</div>
+          <div class="timeline-position">${position}</div>
+          ${desc ? `<div class="timeline-desc">${desc}</div>` : ''}
+        </div>
+      `;
+    }).join('');
+  } else {
+    $('#experienceTimeline').innerHTML = '<div class="empty-state"><div class="empty-icon">💼</div><p>暂无工作经历</p></div>';
+  }
+
+  // ---- Projects ----
+  const projects = merged.project_experience || [];
+  if (projects.length > 0) {
+    $('#projectGrid').innerHTML = projects.map(p => {
+      const name = getVal(p, 'project_name');
+      const role = getVal(p, 'role');
+      const period = getVal(p, 'time');
+      const desc = p.content || '';
+      const achievement = p.achievement || '';
+      return `
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-name">${name}</div>
+            ${role !== '—' ? `<span class="project-role">${role}</span>` : ''}
+          </div>
+          ${period !== '—' ? `<div class="project-period">${period}</div>` : ''}
+          ${desc ? `<div class="project-desc">${desc}</div>` : ''}
+          ${achievement ? `
+            <div class="project-achievement">
+              <span class="achievement-label">🏆 项目成就</span>
+              ${achievement}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  } else {
+    $('#projectGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">🚀</div><p>暂无代表项目</p></div>';
+  }
+
+  // ---- Education ----
+  const education = merged.education || [];
+  if (education.length > 0) {
+    $('#eduList').innerHTML = education.map(edu => `
+      <div class="edu-item">
+        <div class="edu-icon">🎓</div>
+        <div class="edu-content">
+          <div class="edu-school">${getVal(edu, 'school')}</div>
+          <div class="edu-detail">${getVal(edu, 'major')} · ${getVal(edu, 'degree')}</div>
+          <div class="edu-period">${getVal(edu, 'time')}</div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    $('#eduList').innerHTML = '<div class="empty-state"><div class="empty-icon">🎓</div><p>暂无教育背景</p></div>';
+  }
+
+  // ---- Skills ----
+  const skills = merged.skills || [];
+  const certificates = merged.certificates || [];
+  const languages = merged.languages || [];
+  const allSkills = [...skills];
+  if (certificates.length) certificates.forEach(c => allSkills.push(`📜 ${c}`));
+  if (languages.length) languages.forEach(l => allSkills.push(`🌐 ${l}`));
+
+  if (allSkills.length > 0) {
+    $('#skillsGrid').innerHTML = allSkills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+  } else {
+    $('#skillsGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">⚡</div><p>暂无技能标签</p></div>';
+  }
+
+  // ---- Show HR content ----
+  $('#hrLoading').style.display = 'none';
+  $('#hrContent').style.display = 'block';
+
+  // ---- Chat ----
+  initChat(resumeId);
+}
+
+function initChat(rid) {
+  const chatInput = $('#chatInput');
+  const chatSend = $('#chatSend');
+  const chatMessages = $('#chatMessages');
+  let chatHistory = [];
+
+  // Load history
+  loadHistory();
+
+  async function loadHistory() {
+    try {
+      const resp = await fetch(`${API_BASE}/api/chat/history/${rid}`);
+      if (resp.ok) {
+        const messages = await resp.json();
+        messages.forEach(msg => {
+          appendMessage(msg.role, msg.content, false);
+          chatHistory.push({ role: msg.role, content: msg.content });
+        });
+        scrollChat();
+      }
+    } catch (e) {
+      // Ignore history load errors
+    }
+  }
+
+  // Quick questions
+  $$('.quick-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      sendMessage(q);
+    });
+  });
+
+  // Send
+  chatSend.addEventListener('click', () => {
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+    sendMessage(msg);
+    chatInput.value = '';
+  });
+
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      chatSend.click();
+    }
+  });
+
+  async function sendMessage(msg) {
+    appendMessage('user', msg);
+    chatHistory.push({ role: 'user', content: msg });
+
+    // Show typing indicator
+    const typingEl = showTyping();
+    chatSend.disabled = true;
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/chat/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume_id: rid,
+          message: msg,
+          history: chatHistory.slice(-10) // last 10 messages for context
+        })
+      });
+
+      if (!resp.ok) throw new Error('对话失败');
+      const data = await resp.json();
+
+      removeTyping(typingEl);
+      appendMessage('assistant', data.reply);
+      chatHistory.push({ role: 'assistant', content: data.reply });
+    } catch (e) {
+      removeTyping(typingEl);
+      appendMessage('assistant', '抱歉，我暂时无法回答，请稍后再试。');
+    }
+
+    chatSend.disabled = false;
+    scrollChat();
+  }
+
+  function appendMessage(role, content, animate = true) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    const avatar = role === 'assistant' ? '🤖' : '👤';
+    div.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div class="msg-bubble">${escapeHtml(content)}</div>
+    `;
+    if (animate) div.classList.add('fade-in');
+    chatMessages.appendChild(div);
+    scrollChat();
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'chat-msg assistant fade-in';
+    div.id = 'typing-indicator';
+    div.innerHTML = `
+      <div class="msg-avatar">🤖</div>
+      <div class="chat-typing"><span></span><span></span><span></span></div>
+    `;
+    chatMessages.appendChild(div);
+    scrollChat();
+    return div;
+  }
+
+  function removeTyping(el) {
+    if (el && el.parentNode) el.remove();
+  }
+
+  function scrollChat() {
+    requestAnimationFrame(() => {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+}
+</script>
+</body>
+</html>
