@@ -89,9 +89,14 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       questions: analysisResult.questions || []
     };
 
+       console.log('准备保存到数据库，resume_id:', resumeId);
     try {
-      Resume.create(resumeData);
+      const result = Resume.create(resumeData);
+      console.log('数据库保存成功，影响行数:', result.changes);
+      const verify = Resume.findByResumeId(resumeId);
+      console.log('验证查询结果:', verify ? '找到' : '未找到');
     } catch (dbError) {
+      console.error('数据库保存失败:', dbError);
       fs.unlinkSync(filePath);
       return res.status(500).json({ error: `数据库保存失败: ${dbError.message}` });
     }
