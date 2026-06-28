@@ -4,7 +4,9 @@ const config = require('../config');
 // 初始化OpenAI客户端
 const client = new OpenAI({
   apiKey: config.DEEPSEEK_API_KEY,
-  baseURL: config.DEEPSEEK_BASE_URL
+  baseURL: config.DEEPSEEK_BASE_URL,
+  timeout: 60000,
+  maxRetries: 2
 });
 
 // 简历分析师 Prompt
